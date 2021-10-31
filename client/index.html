@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type='text/javascript'>
+        function loadData() {
+            var request = new XMLHttpRequest();
+            request.onload = function () {
+                var jsonObj = JSON.parse(request.responseText);
+                let text = "<table border='1'>"
+                text += "<tr><th>ID</th><th>Title</th><th>Artist</th><th>Price</th></tr>"
+                for (let i in jsonObj) {
+                    text += "<tr><td>" + jsonObj[i].id + "</td><td>" + jsonObj[i].title + "</td><td>" + jsonObj[i]
+                        .artist + "</td><td>" + jsonObj[i].price + "</td></tr>";
+                }
+                text += "</table>";
+                document.getElementById("tbl").innerHTML = text;
+            }
+            request.open("GET", "/albums/");
+            request.send();
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Album Web App</h1>
+    <p id="tbl"></p>
+    <div class="central">
+        <button type="button" onclick="loadData()">Refresh Data</button>
+    </div>
+
+    <body onload="loadData();">
+
+</body>
+
+</html>

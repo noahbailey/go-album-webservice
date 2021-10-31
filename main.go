@@ -64,6 +64,7 @@ func main() {
 	// The webserver and its routing channels
 	log.Println("Starting webserver on localhost:8000")
 	mux := mux.NewRouter()
+	mux.Handle("/", http.FileServer(http.Dir("client")))
 	mux.HandleFunc("/albums/", dbh.getAlbums).Methods("Get")
 	mux.HandleFunc("/album/", dbh.addAlbum).Methods("Post")
 	mux.HandleFunc("/album/{id}", dbh.getAlbumByID).Methods("Get")
@@ -117,6 +118,7 @@ func createTable(db *sql.DB) {
 //Get all albums
 func (dbh dbHandler) getAlbums(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	var albums []Album
 	row, err := dbh.db.Query("SELECT * FROM album")
 	if err != nil {
@@ -136,6 +138,7 @@ func (dbh dbHandler) getAlbums(w http.ResponseWriter, r *http.Request) {
 
 //Get an album for a given ID
 func (dbh dbHandler) getAlbumByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	id := mux.Vars(r)["id"]
 	var alb Album
 	row := dbh.db.QueryRow("SELECT * FROM album WHERE id = ?", id)
@@ -150,6 +153,7 @@ func (dbh dbHandler) getAlbumByID(w http.ResponseWriter, r *http.Request) {
 
 //Insert data into the database
 func (dbh dbHandler) addAlbum(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	album := Album{}
 	// Parse the JSON post body
 	if err := json.NewDecoder(r.Body).Decode(&album); err != nil {
@@ -174,6 +178,7 @@ func (dbh dbHandler) addAlbum(w http.ResponseWriter, r *http.Request) {
 //Delete a record by ID
 //Should probably check if the record exists first
 func (dbh dbHandler) deleteAlbumByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	id := mux.Vars(r)["id"]
 	//Don't check if it exists, just delete from the DB
 	_, err := dbh.db.Exec("DELETE FROM ALBUM WHERE ID=?", id)
