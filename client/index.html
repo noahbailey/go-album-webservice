@@ -3,6 +3,7 @@
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type='text/javascript'>
+        //Load the table using an ajax request
         function loadData() {
             var request = new XMLHttpRequest();
             request.onload = function () {
@@ -19,6 +20,28 @@
             request.open("GET", "/albums/");
             request.send();
         }
+
+        //Submit a new album to the database with JSON post
+        $(document).ready(function () {
+            $("form").submit(function (event) {
+                $.ajax({
+                    type: "POST",
+                    url: "/album/",
+                    data: JSON.stringify({
+                        title: $("#title").val(),
+                        artist: $("#artist").val(),
+                        price: parseFloat($("#price").val())
+                    }),
+                    dataType: "json",
+                    contentType: "application/json",
+                    //If successful, reload the table
+                    success: function (data) {
+                        loadData()
+                    },
+                });
+                event.preventDefault();
+            });
+        });
     </script>
 </head>
 
@@ -31,6 +54,26 @@
 
     <body onload="loadData();">
 
-</body>
+        <h2>Add new album:</h2>
+        <form id="submit_alb" title="">
+            <table>
+                <tr>
+                    <td>Title: </td>
+                    <td><input id="title" name="title" type="text"></input></td>
+                </tr>
+                <tr>
+                    <td>Artist: </td>
+                    <td><input id="artist" name="artist" type="text"></input></td>
+                </tr>
+                <tr>
+                    <td>Price: </td>
+                    <td><input id="price" name="price" type="text"></input></td>
+                </tr>
+                <tr>
+                    <td><button id="sendDataBtn" type="submit">Submit</button></td>
+                </tr>
+            </table>
+        </form>
+    </body>
 
-</html>
+    </html>
