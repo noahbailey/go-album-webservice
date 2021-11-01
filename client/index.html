@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <head>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type='text/javascript'>
         //Load the table using an ajax request
@@ -8,16 +9,29 @@
             var request = new XMLHttpRequest();
             request.onload = function () {
                 var jsonObj = JSON.parse(request.responseText);
-                let text = "<table border='1'>"
-                text += "<tr><th>ID</th><th>Title</th><th>Artist</th><th>Price</th></tr>"
+                //Yes, I know this is terrible. I just don't know any better :)
+                let text = "<table class='table table-hover'>"
+                text += "<tr><th>ID</th><th>Title</th><th>Artist</th><th>Price</th><th></th></tr>"
                 for (let i in jsonObj) {
                     text += "<tr><td>" + jsonObj[i].id + "</td><td>" + jsonObj[i].title + "</td><td>" + jsonObj[i]
-                        .artist + "</td><td>" + jsonObj[i].price + "</td></tr>";
+                        .artist + "</td><td>" + jsonObj[i].price + "</td><td>" +
+                        "<button type='button' class='btn btn-danger' onclick='deleteData(" + jsonObj[i].id + ")''>Delete</button>" +
+                        "</td></tr>";
                 }
                 text += "</table>";
                 document.getElementById("tbl").innerHTML = text;
             }
             request.open("GET", "/albums/");
+            request.send();
+        }
+
+        function deleteData(id) {
+            var request = new XMLHttpRequest();
+            path = "/album/" + id;
+            request.open("DELETE", path);
+            request.onload = function () {
+                loadData()
+            }
             request.send();
         }
 
@@ -46,34 +60,45 @@
 </head>
 
 <body>
-    <h1>Album Web App</h1>
-    <p id="tbl"></p>
-    <div class="central">
-        <button type="button" onclick="loadData()">Refresh Data</button>
-    </div>
 
-    <body onload="loadData();">
+    <div class="col-sm-6 col-sm-offset-3">
+
+
+        <h1>Album Web App</h1>
+
+        <div class="central">
+            <p id="tbl"></p>
+            <button type="button" class="btn btn-success" onclick="loadData()">Refresh Data</button>
+        </div>
+
+        <div id="loadbutton" class="form-group">
+
+            <body onload="loadData();">
+        </div>
 
         <h2>Add new album:</h2>
-        <form id="submit_alb" title="">
-            <table>
-                <tr>
-                    <td>Title: </td>
-                    <td><input id="title" name="title" type="text"></input></td>
-                </tr>
-                <tr>
-                    <td>Artist: </td>
-                    <td><input id="artist" name="artist" type="text"></input></td>
-                </tr>
-                <tr>
-                    <td>Price: </td>
-                    <td><input id="price" name="price" type="text"></input></td>
-                </tr>
-                <tr>
-                    <td><button id="sendDataBtn" type="submit">Submit</button></td>
-                </tr>
-            </table>
-        </form>
-    </body>
+        <div id="newAlbForm" class="form-group">
+            <form id="submit_alb" title="">
+                <table>
+                    <tr>
+                        <td>Title: </td>
+                        <td><input id="title" name="title" type="text"></input></td>
+                    </tr>
+                    <tr>
+                        <td>Artist: </td>
+                        <td><input id="artist" name="artist" type="text"></input></td>
+                    </tr>
+                    <tr>
+                        <td>Price: </td>
+                        <td><input id="price" name="price" type="text"></input></td>
+                    </tr>
+                    <tr>
+                        <td><button id="sendDataBtn" type="submit" class="btn btn-success">Submit</button></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+</body>
 
-    </html>
+</html>
