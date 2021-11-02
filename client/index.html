@@ -1,40 +1,49 @@
 <!DOCTYPE html>
 
+<html lang=en>
+
 <head>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script type='text/javascript'>
+
         //Load the table using an ajax request
-        function loadData() {
-            var request = new XMLHttpRequest();
-            request.onload = function () {
-                var jsonObj = JSON.parse(request.responseText);
-                //Yes, I know this is terrible. I just don't know any better :)
-                let text = "<table class='table table-hover'>"
-                text += "<tr><th>ID</th><th>Title</th><th>Artist</th><th>Price</th><th></th></tr>"
-                for (let i in jsonObj) {
-                    text += "<tr><td>" + jsonObj[i].id + "</td><td>" + jsonObj[i].title + "</td><td>" + jsonObj[i]
-                        .artist + "</td><td>" + jsonObj[i].price + "</td><td>" +
-                        "<button type='button' class='btn btn-danger' onclick='deleteData(" + jsonObj[i].id + ")''>Delete</button>" +
-                        "</td></tr>";
+        window.onload = function () {
+            var tbl = new Vue({
+                el: '#tbl',
+                data: {
+                    alb: []
+                },
+                created() {
+                    this.fetchData();
+                },
+                methods: {
+                    async fetchData() {
+                        fetch("/albums/")
+                            .then(response => response.json())
+                            .then(json => {this.alb = json})
+                    }
                 }
-                text += "</table>";
-                document.getElementById("tbl").innerHTML = text;
-            }
-            request.open("GET", "/albums/");
-            request.send();
+            })
         }
 
+        function dummy() {
+            console.log("The delete button does not work.")
+        }
+
+        //Currently does not work until I get the ID param to template out...
         function deleteData(id) {
             var request = new XMLHttpRequest();
             path = "/album/" + id;
             request.open("DELETE", path);
+            //TODO: Make the reload-after-delete work again
             request.onload = function () {
-                loadData()
+                tbl.fetchData() //Figure out why this doesn't work...
             }
             request.send();
         }
-
+        
         //Submit a new album to the database with JSON post
         $(document).ready(function () {
             $("form").submit(function (event) {
@@ -49,8 +58,9 @@
                     dataType: "json",
                     contentType: "application/json",
                     //If successful, reload the table
+                    //TODO: this method call doesn't work because this is using jquery instead of vue?
                     success: function (data) {
-                        loadData()
+                        tbl.fetchData()
                     },
                 });
                 event.preventDefault();
@@ -63,18 +73,22 @@
 
     <div class="col-sm-6 col-sm-offset-3">
 
-
         <h1>Album Web App</h1>
 
-        <div class="central">
-            <p id="tbl"></p>
-            <button type="button" class="btn btn-success" onclick="loadData()">Refresh Data</button>
+        <div id="tbl" class="central">
+            <table class="table table-header">
+                <th>ID</th><th>Title</th><th>Artist</th><th>Price</th><th></th>
+                <tr v-for="i in alb">
+                    <td>{{ i.id }}</td>
+                    <td>{{ i.title }}</td>
+                    <td>{{ i.artist }}</td>
+                    <td>{{ i.price }}</td>
+                    <td><button onclick="dummy()" class="btn btn-danger">Delete</button></td>
+                </tr>
+        </table>
+        <button @click="fetchData" type="submit" class="btn btn-success">Refresh Data</button>
         </div>
 
-        <div id="loadbutton" class="form-group">
-
-            <body onload="loadData();">
-        </div>
 
         <h2>Add new album:</h2>
         <div id="newAlbForm" class="form-group">
