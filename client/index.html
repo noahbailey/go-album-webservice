@@ -6,43 +6,52 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type='text/javascript'>
 
-        //Load the table using an ajax request
-        window.onload = function () {
-            var tbl = new Vue({
-                el: '#tbl',
-                data: {
+        window.onload = function() {
+            Vue.component('tbltemplate', {
+            template:
+            `
+            <div id="tblgroup">
+            <table class="table table-header">
+                <th>ID</th><th>Title</th><th>Artist</th><th>Price</th><th></th>
+                <tr v-for="i in alb">
+                    <td>{{ i.id }}</td>
+                    <td>{{ i.title }}</td>
+                    <td>{{ i.artist }}</td>
+                    <td>{{ i.price }}</td>
+                    <td><button @click="deleteData(i.id)" class="btn btn-danger">Delete</button></td>
+                </tr>
+            </table>
+            <button @click="fetchData" type="submit" class="btn btn-success">Refresh Data</button>
+            </div>
+                `,
+            data: function() {
+                return {
                     alb: []
-                },
-                created() {
-                    this.fetchData();
-                },
-                methods: {
-                    async fetchData() {
-                        fetch("/albums/")
-                            .then(response => response.json())
-                            .then(json => {this.alb = json})
-                    }
                 }
-            })
-        }
-
-        function dummy() {
-            console.log("The delete button does not work.")
-        }
-
-        //Currently does not work until I get the ID param to template out...
-        function deleteData(id) {
-            var request = new XMLHttpRequest();
-            path = "/album/" + id;
-            request.open("DELETE", path);
-            //TODO: Make the reload-after-delete work again
-            request.onload = function () {
-                tbl.fetchData() //Figure out why this doesn't work...
+            },
+            created() {
+                this.fetchData();
+            },
+            methods: {
+                async fetchData() {
+                    fetch("/albums/")
+                        .then(response => response.json())
+                        .then(json => {this.alb = json})
+                },
+                async deleteData(id) {
+                    del = "/album/" + id
+                    const res = await axios.delete(del);
+                    this.fetchData();
+                }
             }
-            request.send();
-        }
+        });
+        const tbl = new Vue({
+            el: '#tbl',
+        });
+    }
         
         //Submit a new album to the database with JSON post
         $(document).ready(function () {
@@ -76,19 +85,8 @@
         <h1>Album Web App</h1>
 
         <div id="tbl" class="central">
-            <table class="table table-header">
-                <th>ID</th><th>Title</th><th>Artist</th><th>Price</th><th></th>
-                <tr v-for="i in alb">
-                    <td>{{ i.id }}</td>
-                    <td>{{ i.title }}</td>
-                    <td>{{ i.artist }}</td>
-                    <td>{{ i.price }}</td>
-                    <td><button onclick="dummy()" class="btn btn-danger">Delete</button></td>
-                </tr>
-        </table>
-        <button @click="fetchData" type="submit" class="btn btn-success">Refresh Data</button>
+            <tbltemplate></tbltemplate>
         </div>
-
 
         <h2>Add new album:</h2>
         <div id="newAlbForm" class="form-group">
