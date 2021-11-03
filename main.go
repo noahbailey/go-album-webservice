@@ -17,6 +17,7 @@ import (
  *  Get by ID: 	curl localhost:8000/album/1
  *  Delete:     curl localhost:8000/album/1 -X DELETE
  *  Create: 	curl localhost:8000/album/ -X POST -d '{"title":"foo","artist":"bar","price":5.99}'
+ *  Update:     curl localhost:8000/album/1 -X PUT -d '{"id":1,"title":"foo","artist":"bar","price":9.99}'
  */
 
 type Album struct {
@@ -68,6 +69,7 @@ func main() {
 	mux.HandleFunc("/albums/", dbh.getAlbums).Methods("Get")
 	mux.HandleFunc("/album/", dbh.addAlbum).Methods("Post")
 	mux.HandleFunc("/album/{id}", dbh.getAlbumByID).Methods("Get")
+	mux.HandleFunc("/album/{id}", dbh.updateAlbumByID).Methods("Put")
 	mux.HandleFunc("/album/{id}", dbh.deleteAlbumByID).Methods("Delete")
 
 	log.Fatal(http.ListenAndServe(":8000", mux))
@@ -149,6 +151,24 @@ func (dbh dbHandler) getAlbumByID(w http.ResponseWriter, r *http.Request) {
 		//should something go here?
 	}
 	json.NewEncoder(w).Encode(alb)
+}
+
+//Update album for a given ID
+func (dbh dbHandler) updateAlbumByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	id := mux.Vars(r)["id"]
+	album := Album{}
+	// Parse the JSON post body
+	if err := json.NewDecoder(r.Body).Decode(&album); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	_, err := dbh.db.Exec("UPDATE ALBUM SET title = ?, artist = ?, price = ? WHERE ID = ?", album.Title, album.Artist, album.Price, id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 //Insert data into the database
