@@ -19,7 +19,7 @@ class Table extends React.Component {
         .then(albs => this.setState({ albs }));
     }
 
-    async delButton(id) {
+    async deleteData(id) {
         const url = "http://localhost:8000/album/" + id
         const reqOpts = {
             method: "DELETE", 
@@ -29,8 +29,12 @@ class Table extends React.Component {
         await this.refreshData()
     }
 
-    editButton(id) {
-        console.log("I will be edited! #: " + id)
+    editData() {
+        console.log("I don't do anything yet!")
+    }
+
+    addData() {
+        console.log("I don't do anything yet!")
     }
 
     render() {
@@ -41,15 +45,15 @@ class Table extends React.Component {
                     <td>{i.title}</td>
                     <td>{i.artist}</td>
                     <td>{i.price}</td>
-                    <td><button onClick={() => this.editButton(i.id)}>Edit</button></td>
-                    <td><button onClick={() => this.delButton(i.id)}>Delete</button></td>
+                    <td><button class="btn btn-warning" onClick={() => this.editData(i.id)}>Edit</button></td>
+                    <td><button class="btn btn-danger"onClick={() => this.deleteData(i.id)}>Delete</button></td>
                 </tr>
             );
         });
         return (
-            <div className="application">
+            <div className="application" class="col-sm-8 col-sm-offset-2">
             <div className="table">
-                <table>
+                <table class="table table-header">
                     <thead>
                     <tr><th>ID</th><th>Title</th><th>Artist</th><th>Price</th></tr>
                     </thead>
@@ -57,8 +61,9 @@ class Table extends React.Component {
                 </table>
             </div>
             <div className="ctrls">
-                <button onClick={() => this.refreshData()}>Refresh Data</button>
-                <button onClick={() => this.addData()}>Add Album</button>
+                <button class="btn btn-primary" onClick={() => this.refreshData()}>Refresh Data</button>
+                &nbsp;
+                <button class="btn btn-success" onClick={() => this.addData()}>Add Album</button>
             </div>
             </div>
         );
