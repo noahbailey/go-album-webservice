@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/cors"
 )
 
 /* Using RESTey api:
@@ -72,7 +73,14 @@ func main() {
 	mux.HandleFunc("/album/{id}", dbh.updateAlbumByID).Methods("Put")
 	mux.HandleFunc("/album/{id}", dbh.deleteAlbumByID).Methods("Delete")
 
-	log.Fatal(http.ListenAndServe(":8000", mux))
+	//Deal with CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	})
+
+	handler := c.Handler(mux)
+	log.Fatal(http.ListenAndServe(":8000", handler))
 }
 
 //Check if file exists:
@@ -119,8 +127,6 @@ func createTable(db *sql.DB) {
 
 //Get all albums
 func (dbh dbHandler) getAlbums(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	w.Header().Add("Access-Control-Allow-Origin", "*")
 	var albums []Album
 	row, err := dbh.db.Query("SELECT * FROM album")
 	if err != nil {
@@ -140,7 +146,6 @@ func (dbh dbHandler) getAlbums(w http.ResponseWriter, r *http.Request) {
 
 //Get an album for a given ID
 func (dbh dbHandler) getAlbumByID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
 	id := mux.Vars(r)["id"]
 	var alb Album
 	row := dbh.db.QueryRow("SELECT * FROM album WHERE id = ?", id)
@@ -155,7 +160,6 @@ func (dbh dbHandler) getAlbumByID(w http.ResponseWriter, r *http.Request) {
 
 //Update album for a given ID
 func (dbh dbHandler) updateAlbumByID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
 	id := mux.Vars(r)["id"]
 	album := Album{}
 	// Parse the JSON post body
@@ -173,7 +177,6 @@ func (dbh dbHandler) updateAlbumByID(w http.ResponseWriter, r *http.Request) {
 
 //Insert data into the database
 func (dbh dbHandler) addAlbum(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
 	album := Album{}
 	// Parse the JSON post body
 	if err := json.NewDecoder(r.Body).Decode(&album); err != nil {
@@ -198,7 +201,6 @@ func (dbh dbHandler) addAlbum(w http.ResponseWriter, r *http.Request) {
 //Delete a record by ID
 //Should probably check if the record exists first
 func (dbh dbHandler) deleteAlbumByID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
 	id := mux.Vars(r)["id"]
 	//Don't check if it exists, just delete from the DB
 	_, err := dbh.db.Exec("DELETE FROM ALBUM WHERE ID=?", id)
